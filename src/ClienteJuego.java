@@ -1,41 +1,63 @@
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 import java.util.Scanner;
-import java.io.PrintWriter;
 
 public class ClienteJuego
 {
-
-    public static void main(String[] args) throws Exception
+    public static void main(String[] args)
     {
-
-        Socket socket = new Socket("localhost", 5000);
-        Scanner in = new Scanner(socket.getInputStream());
-        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-        Scanner teclado = new Scanner(System.in);
-
-        while (true)
+        try (Socket socket = new Socket("localhost", 5000);
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             Scanner sc = new Scanner(System.in))
         {
-            String msg = in.nextLine();
 
-            if (msg.startsWith("INICIO"))
+            String msg;
+            while ((msg = in.readLine()) != null)
             {
-                System.out.println(msg);
-            } else if (msg.equals("TURNO"))
-            {
-                System.out.print("Tu turno (1-9): ");
-                int pos = teclado.nextInt();
-                out.println("PONER " + pos);
-            } else if (msg.equals("ESPERA"))
-            {
-                System.out.println("Esperando al rival...");
-            } else if (msg.equals("TABLERO"))
-            {
-                System.out.println(in.nextLine());
-            } else if (msg.startsWith("FIN"))
-            {
-                System.out.println(msg);
-                break;
+                if (msg.startsWith("INICIO"))
+                {
+                    System.out.println("Conectado. " + msg);
+                }
+                else if (msg.startsWith("TABLERO"))
+                {
+                    String datos = msg.substring(8); // Quitamos la palabra "TABLERO "
+                    String[] casillas = datos.split(",");
+
+                    System.out.println("\n--- ESTADO DEL TABLERO ---");
+                    for (int i = 0; i < 9; i++) {
+                        // Imprimir el inicio de fila
+                        if (i % 3 == 0) System.out.print("| ");
+
+                        System.out.print(casillas[i] + " | ");
+
+                        // Salto de línea al final de cada fila de 3
+                        if ((i + 1) % 3 == 0) {
+                            System.out.println();
+                        }
+                    }
+                    System.out.println("--------------------------");
+                }
+                else if (msg.startsWith("ESPERA"))
+                {
+                    System.out.println("Esperando al rival...");
+                }
+                else if (msg.startsWith("TURNO"))
+                {
+                    System.out.print("Es tu turno. Introduce Fila y Columna (ej: 1 1): ");
+                    int f = sc.nextInt();
+                    int c = sc.nextInt();
+                    out.println("PONER " + f + " " + c);
+                }
+                else if (msg.startsWith("FIN"))
+                {
+                    System.out.println("PARTIDA FINALIZADA: " + msg);
+                    break;
+                }
             }
+        } catch (IOException e)
+        {
+            e.printStackTrace();
         }
     }
 }
