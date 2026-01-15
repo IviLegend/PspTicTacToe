@@ -1,5 +1,4 @@
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -24,9 +23,11 @@ class HiloJugador implements Runnable
         this.rival = r;
     }
 
-    public void enviar(String msg)
+    public void enviarEstado()
     {
-        out.println(msg);
+        out.println(gestor.getTableroProtocolo());
+        if (gestor.jugadorActual == id) out.println("TURNO");
+        else out.println("ESPERA");
     }
 
     @Override
@@ -37,46 +38,36 @@ class HiloJugador implements Runnable
             out = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            enviar("INICIO " + id);
+            out.println("INICIO " + id);
 
+            // Bucle principal de red
             while (true)
             {
-                enviar(gestor.obtenerMapaComoTexto());
+                enviarEstado();
+                String peticion = in.readLine();
+                if (peticion == null) break;
 
-                if (gestor.jugadorActual == id)
+                if (peticion.startsWith("PONER"))
                 {
-                    enviar("TURNO");
-                }
-                else
-                {
-                    enviar("ESPERA");
-                }
+                    int pos = Integer.parseInt(peticion.split(" ")[1]);
+                    String res = gestor.intentarMovimiento(pos, id);
 
-                String msg = in.readLine();
-                if (msg == null) break;
-
-                if (msg.startsWith("PONER"))
-                {
-                    int pos = Integer.parseInt(msg.split(" ")[1]);
-                    String resultado = gestor.realizarMovimiento(pos, id);
-
-                    if (resultado.startsWith("FIN"))
+                    if (res.startsWith("FIN"))
                     {
-                        enviar(gestor.obtenerMapaComoTexto());
-                        enviar(resultado);
-                        rival.enviar(gestor.obtenerMapaComoTexto());
-                        rival.enviar(resultado);
+                        String m = (res.equals("FIN_GANADOR")) ? "Ganador J" + id : "Empate";
+                        out.println(gestor.getTableroProtocolo());
+                        out.println("FIN " + m);
+                        rival.out.println(gestor.getTableroProtocolo());
+                        rival.out.println("FIN " + m);
                         break;
                     }
-                    else if (resultado.startsWith("ERROR"))
-                    {
-                        enviar(resultado);
-                    }
+
+                    rival.enviarEstado();
                 }
             }
-        } catch (IOException e)
+        } catch (Exception e)
         {
-            rival.enviar("FIN El rival se ha desconectado");
+            if (rival != null) rival.out.println("FIN Rival desconectado");
         }
     }
 }

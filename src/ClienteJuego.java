@@ -6,65 +6,50 @@ public class ClienteJuego
 {
     public static void main(String[] args)
     {
-        try (Socket socket = new Socket("localhost", 5000);
-             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-             Scanner sc = new Scanner(System.in))
+        try
         {
+            Socket socket = new Socket("localhost", 5000);
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            Scanner sc = new Scanner(System.in);
 
-            String linea;
-            while ((linea = in.readLine()) != null)
+            String msg;
+            while ((msg = in.readLine()) != null)
             {
-                if (linea.startsWith("INICIO"))
+                if (msg.startsWith("TABLERO"))
                 {
-                    System.out.println("Eres el Jugador " + linea.split(" ")[1]);
-                }
-                else if (linea.startsWith("TABLERO"))
+                    pintar(msg.substring(8));
+                } else if (msg.startsWith("TURNO"))
                 {
-                    pintarMapa(linea.substring(8));
-                }
-                else if (linea.startsWith("ESPERA"))
+                    System.out.print("Tu turno (1-9): ");
+                    out.println("PONER " + sc.next());
+                } else if (msg.startsWith("ESPERA"))
                 {
                     System.out.println("Esperando al rival...");
-                }
-                else if (linea.startsWith("TURNO"))
+                } else if (msg.startsWith("FIN"))
                 {
-                    System.out.print("Tu turno. Dime posición (1-9): ");
-                    int pos = sc.nextInt();
-                    out.println("PONER " + pos);
-                }
-                else if (linea.startsWith("FIN"))
-                {
-                    System.out.println("PARTIDA ACABADA: " + linea);
+                    System.out.println("Partida terminada: " + msg);
                     break;
                 }
-                else if (linea.startsWith("ERROR"))
-                {
-                    System.err.println(linea);
-                }
             }
+            socket.close();
         }
         catch (IOException e)
         {
-            System.out.println("Conexión perdida con el servidor.");
+            throw new RuntimeException(e);
         }
+
     }
 
-    public static void pintarMapa(String datos)
+    public static void pintar(String d)
     {
-        String[] casillas = datos.split(",");
+        String[] c = d.split(",");
         System.out.println("\nTablero:");
         for (int f = 0; f < 3; f++)
         {
-            for (int c = 0; c < 3; c++)
-            {
-                int i = f * 3 + c;
-                System.out.print("| " + casillas[i] + " ");
-            }
-
-            int numRef = 9 - (f * 3);
-            System.out.println("|    " + (numRef - 2) + " " + (numRef - 1) + " " + numRef);
+            System.out.print("| " + c[f * 3] + " | " + c[f * 3 + 1] + " | " + c[f * 3 + 2] + " |");
+            int n = 9 - (f * 3);
+            System.out.println("    " + (n - 2) + " " + (n - 1) + " " + n);
         }
-        System.out.println();
     }
 }

@@ -1,34 +1,23 @@
-import java.util.Random;
+
 
 public class GestorJuego
 {
-    public String[][] mapa;
+    public String[][] mapa = new String[3][3];
     public String relleno = "-";
-    public int jugadorActual;
-    private boolean partidaFinalizada = false;
+    public int jugadorActual = 1;
 
     public GestorJuego()
     {
-        mapa = new String[3][3];
-        // Rellenar el mapa
         for (int f = 0; f < 3; f++)
-        {
-            for (int c = 0; c < 3; c++)
-            {
-                mapa[f][c] = relleno;
-            }
-        }
-
-        jugadorActual = 1;
+            for (int c = 0; c < 3; c++) mapa[f][c] = relleno;
     }
 
-    public synchronized String realizarMovimiento(int posicion, int idJugador)
+    public synchronized String intentarMovimiento(int pos, int id)
     {
-        if (partidaFinalizada) return "FIN La partida ya terminó";
-        if (idJugador != jugadorActual) return "ERROR No es tu turno";
+        if (id != jugadorActual) return "NO_ES_TU_TURNO";
 
         int f = 0, c = 0;
-        switch (posicion)
+        switch (pos)
         {
             case 1 ->
             {
@@ -77,34 +66,22 @@ public class GestorJuego
             }
             default ->
             {
-                return "ERROR Posición inválida";
+                return "ERROR";
             }
         }
 
-        if (!mapa[f][c].equals(relleno))
-        {
-            return "ERROR Casilla ocupada";
-        }
+        if (!mapa[f][c].equals(relleno)) return "OCUPADA";
 
-        mapa[f][c] = (idJugador == 1) ? "X" : "O";
+        mapa[f][c] = (id == 1) ? "X" : "O";
 
-        if (comprobarVictoria(mapa[f][c]))
-        {
-            partidaFinalizada = true;
-            return "FIN Ganador Jugador " + idJugador;
-        }
-
-        if (comprobarEmpate())
-        {
-            partidaFinalizada = true;
-            return "FIN Empate";
-        }
+        if (verVictoria(mapa[f][c])) return "FIN_GANADOR";
+        if (verEmpate()) return "FIN_EMPATE";
 
         jugadorActual = (jugadorActual == 1) ? 2 : 1;
         return "OK";
     }
 
-    public synchronized String obtenerMapaComoTexto()
+    public synchronized String getTableroProtocolo()
     {
         String res = "TABLERO ";
         for (int f = 0; f < 3; f++)
@@ -117,29 +94,25 @@ public class GestorJuego
         return res;
     }
 
-    private boolean comprobarVictoria(String ficha)
+    private boolean verVictoria(String ficha)
     {
-        // Horizontal y vertical
+        // Horizontal y Vertical
         for (int i = 0; i < 3; i++)
         {
             if (mapa[i][0].equals(ficha) && mapa[i][1].equals(ficha) && mapa[i][2].equals(ficha)) return true;
             if (mapa[0][i].equals(ficha) && mapa[1][i].equals(ficha) && mapa[2][i].equals(ficha)) return true;
         }
         // Diagonales
-        if (mapa[0][0].equals(ficha) && mapa[1][1].equals(ficha) && mapa[2][2].equals(ficha)) return true;
-        if (mapa[0][2].equals(ficha) && mapa[1][1].equals(ficha) && mapa[2][0].equals(ficha)) return true;
+        if ((mapa[0][0].equals(ficha) && mapa[1][1].equals(ficha) && mapa[2][2].equals(ficha)) ||
+                (mapa[0][2].equals(ficha) && mapa[1][1].equals(ficha) && mapa[2][0].equals(ficha))) return true;
+
         return false;
     }
 
-    private boolean comprobarEmpate()
+    private boolean verEmpate()
     {
-        for (int f = 0; f < 3; f++)
-        {
-            for (int c = 0; c < 3; c++)
-            {
-                if (mapa[f][c].equals(relleno)) return false;
-            }
-        }
+        for (String[] fila : mapa)
+            for (String cas : fila) if (cas.equals(relleno)) return false;
         return true;
     }
 }

@@ -5,29 +5,26 @@ public class ServidorJuego
 {
     public static void main(String[] args)
     {
-        try (ServerSocket servidor = new ServerSocket(5000))
+        try
         {
-            System.out.println("Esperando jugadores...");
+            ServerSocket servidor = new ServerSocket(5000);
             GestorJuego gestor = new GestorJuego();
 
-            Socket s1 = servidor.accept();
-            System.out.println("Jugador 1 conectado");
+            System.out.println("Esperando Jugador 1...");
+            HiloJugador j1 = new HiloJugador(servidor.accept(), 1, gestor);
 
-            Socket s2 = servidor.accept();
-            System.out.println("Jugador 2 conectado");
+            System.out.println("Esperando Jugador 2...");
+            HiloJugador j2 = new HiloJugador(servidor.accept(), 2, gestor);
 
-            HiloJugador h1 = new HiloJugador(s1, 1, gestor);
-            HiloJugador h2 = new HiloJugador(s2, 2, gestor);
-
-            h1.setRival(h2);
-            h2.setRival(h1);
-
-            new Thread(h1).start();
-            new Thread(h2).start();
-
-        } catch (IOException e)
-        {
-            e.printStackTrace();
+            j1.setRival(j2);
+            j2.setRival(j1);
+            new Thread(j1).start();
+            new Thread(j2).start();
         }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
     }
 }
