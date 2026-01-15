@@ -46,7 +46,8 @@ class HiloJugador implements Runnable
                 if (gestor.jugadorActual == id)
                 {
                     enviar("TURNO");
-                } else
+                }
+                else
                 {
                     enviar("ESPERA");
                 }
@@ -66,7 +67,8 @@ class HiloJugador implements Runnable
                         rival.enviar(gestor.obtenerMapaComoTexto());
                         rival.enviar(resultado);
                         break;
-                    } else if (resultado.startsWith("ERROR"))
+                    }
+                    else if (resultado.startsWith("ERROR"))
                     {
                         enviar(resultado);
                     }

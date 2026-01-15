@@ -18,27 +18,33 @@ public class ClienteJuego
                 if (linea.startsWith("INICIO"))
                 {
                     System.out.println("Eres el Jugador " + linea.split(" ")[1]);
-                } else if (linea.startsWith("TABLERO"))
+                }
+                else if (linea.startsWith("TABLERO"))
                 {
                     pintarMapa(linea.substring(8));
-                } else if (linea.startsWith("ESPERA"))
+                }
+                else if (linea.startsWith("ESPERA"))
                 {
                     System.out.println("Esperando al rival...");
-                } else if (linea.startsWith("TURNO"))
+                }
+                else if (linea.startsWith("TURNO"))
                 {
                     System.out.print("Tu turno. Dime posición (1-9): ");
                     int pos = sc.nextInt();
                     out.println("PONER " + pos);
-                } else if (linea.startsWith("FIN"))
+                }
+                else if (linea.startsWith("FIN"))
                 {
                     System.out.println("PARTIDA ACABADA: " + linea);
                     break;
-                } else if (linea.startsWith("ERROR"))
+                }
+                else if (linea.startsWith("ERROR"))
                 {
                     System.err.println(linea);
                 }
             }
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             System.out.println("Conexión perdida con el servidor.");
         }
