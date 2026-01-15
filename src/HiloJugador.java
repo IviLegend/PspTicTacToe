@@ -19,9 +19,9 @@ class HiloJugador implements Runnable
         this.gestor = g;
     }
 
-    public void setRival(HiloJugador rival)
+    public void setRival(HiloJugador r)
     {
-        this.rival = rival;
+        this.rival = r;
     }
 
     public void enviar(String msg)
@@ -41,8 +41,9 @@ class HiloJugador implements Runnable
 
             while (true)
             {
-                enviar(gestor.getEstadoTablero());
-                if (gestor.getTurnoActual() == id)
+                enviar(gestor.obtenerMapaComoTexto());
+
+                if (gestor.jugadorActual == id)
                 {
                     enviar("TURNO");
                 } else
@@ -50,27 +51,30 @@ class HiloJugador implements Runnable
                     enviar("ESPERA");
                 }
 
-                String line = in.readLine();
-                if (line == null) break; // Desconexión
+                String msg = in.readLine();
+                if (msg == null) break;
 
-                if (line.startsWith("PONER"))
+                if (msg.startsWith("PONER"))
                 {
-                    String[] partes = line.split(" ");
-                    int f = Integer.parseInt(partes[1]);
-                    int c = Integer.parseInt(partes[2]);
+                    int pos = Integer.parseInt(msg.split(" ")[1]);
+                    String resultado = gestor.realizarMovimiento(pos, id);
 
-                    String resultado = gestor.ponerFicha(f, c, id);
                     if (resultado.startsWith("FIN"))
                     {
+                        enviar(gestor.obtenerMapaComoTexto());
                         enviar(resultado);
+                        rival.enviar(gestor.obtenerMapaComoTexto());
                         rival.enviar(resultado);
                         break;
+                    } else if (resultado.startsWith("ERROR"))
+                    {
+                        enviar(resultado);
                     }
                 }
             }
         } catch (IOException e)
         {
-            rival.enviar("FIN El rival se ha desconectado. ¡Ganaste!");
+            rival.enviar("FIN El rival se ha desconectado");
         }
     }
 }

@@ -12,52 +12,53 @@ public class ClienteJuego
              Scanner sc = new Scanner(System.in))
         {
 
-            String msg;
-            while ((msg = in.readLine()) != null)
+            String linea;
+            while ((linea = in.readLine()) != null)
             {
-                if (msg.startsWith("INICIO"))
+                if (linea.startsWith("INICIO"))
                 {
-                    System.out.println("Conectado. " + msg);
-                }
-                else if (msg.startsWith("TABLERO"))
+                    System.out.println("Eres el Jugador " + linea.split(" ")[1]);
+                } else if (linea.startsWith("TABLERO"))
                 {
-                    String datos = msg.substring(8); // Quitamos la palabra "TABLERO "
-                    String[] casillas = datos.split(",");
-
-                    System.out.println("\n--- ESTADO DEL TABLERO ---");
-                    for (int i = 0; i < 9; i++) {
-                        // Imprimir el inicio de fila
-                        if (i % 3 == 0) System.out.print("| ");
-
-                        System.out.print(casillas[i] + " | ");
-
-                        // Salto de línea al final de cada fila de 3
-                        if ((i + 1) % 3 == 0) {
-                            System.out.println();
-                        }
-                    }
-                    System.out.println("--------------------------");
-                }
-                else if (msg.startsWith("ESPERA"))
+                    pintarMapa(linea.substring(8));
+                } else if (linea.startsWith("ESPERA"))
                 {
                     System.out.println("Esperando al rival...");
-                }
-                else if (msg.startsWith("TURNO"))
+                } else if (linea.startsWith("TURNO"))
                 {
-                    System.out.print("Es tu turno. Introduce Fila y Columna (ej: 1 1): ");
-                    int f = sc.nextInt();
-                    int c = sc.nextInt();
-                    out.println("PONER " + f + " " + c);
-                }
-                else if (msg.startsWith("FIN"))
+                    System.out.print("Tu turno. Dime posición (1-9): ");
+                    int pos = sc.nextInt();
+                    out.println("PONER " + pos);
+                } else if (linea.startsWith("FIN"))
                 {
-                    System.out.println("PARTIDA FINALIZADA: " + msg);
+                    System.out.println("PARTIDA ACABADA: " + linea);
                     break;
+                } else if (linea.startsWith("ERROR"))
+                {
+                    System.err.println(linea);
                 }
             }
         } catch (IOException e)
         {
-            e.printStackTrace();
+            System.out.println("Conexión perdida con el servidor.");
         }
+    }
+
+    public static void pintarMapa(String datos)
+    {
+        String[] casillas = datos.split(",");
+        System.out.println("\nTablero:");
+        for (int f = 0; f < 3; f++)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                int i = f * 3 + c;
+                System.out.print("| " + casillas[i] + " ");
+            }
+
+            int numRef = 9 - (f * 3);
+            System.out.println("|    " + (numRef - 2) + " " + (numRef - 1) + " " + numRef);
+        }
+        System.out.println();
     }
 }
